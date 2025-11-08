@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Peer from 'peerjs';
+import type { DataConnection } from 'peerjs';
 import type { P2PMessage, Player } from '../types/game';
 import { useGameStore } from '../store/gameStore';
-
-type DataConnection = Peer.DataConnection;
 
 export function usePeerConnection() {
   const [peer, setPeer] = useState<Peer | null>(null);
@@ -72,7 +71,7 @@ export function usePeerConnection() {
       connectionsRef.current = [...connectionsRef.current, conn];
     });
 
-    conn.on('data', (data) => {
+    conn.on('data', (data: unknown) => {
       handleMessage(data as P2PMessage, conn);
     });
 
@@ -83,7 +82,7 @@ export function usePeerConnection() {
       removePlayer(conn.peer);
     });
 
-    conn.on('error', (err) => {
+    conn.on('error', (err: Error) => {
       console.error('Connection error:', err);
     });
   }, [handleMessage, removePlayer]);
@@ -98,7 +97,7 @@ export function usePeerConnection() {
       console.log('Peer ID:', id);
     });
 
-    newPeer.on('error', (err) => {
+    newPeer.on('error', (err: Error) => {
       console.error('Peer error:', err);
       setError(err.message);
     });
@@ -157,7 +156,7 @@ export function usePeerConnection() {
         connectionsRef.current = [conn];
       });
 
-      conn.on('data', (data) => {
+      conn.on('data', (data: unknown) => {
         handleMessage(data as P2PMessage, conn);
       });
 
@@ -166,7 +165,7 @@ export function usePeerConnection() {
         setError('Disconnected from host');
       });
 
-      conn.on('error', (err) => {
+      conn.on('error', (err: Error) => {
         console.error('Connection error:', err);
         setError('Failed to connect to room');
       });
