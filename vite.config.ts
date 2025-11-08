@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/cracklist-game/',
+  base: process.env.NODE_ENV === 'production' ? '/cracklist-game/' : '/',
   plugins: [
     react(),
     tailwindcss(),
