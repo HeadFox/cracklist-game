@@ -69,11 +69,10 @@ export function Lobby() {
 
             <input
               type="text"
-              placeholder="Code de la partie"
+              placeholder="Code de la partie (coller le code complet)"
               value={roomCodeInput}
-              onChange={(e) => setRoomCodeInput(e.target.value.toUpperCase())}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              maxLength={6}
+              onChange={(e) => setRoomCodeInput(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
             />
 
             <button
@@ -110,10 +109,16 @@ export function Lobby() {
         {roomCode && (
           <div className="text-center mb-6">
             <p className="text-gray-600 mb-2">Code de la partie:</p>
-            <div className="inline-block bg-blue-100 px-6 py-3 rounded-lg">
-              <span className="text-3xl font-bold text-blue-600 tracking-wider">
+            <div className="bg-blue-100 px-4 py-3 rounded-lg max-w-full overflow-hidden">
+              <div className="font-mono text-sm text-blue-600 break-all mb-2">
                 {roomCode}
-              </span>
+              </div>
+              <button
+                onClick={() => navigator.clipboard.writeText(roomCode)}
+                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+              >
+                📋 Copier le code
+              </button>
             </div>
           </div>
         )}
