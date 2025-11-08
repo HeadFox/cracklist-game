@@ -117,7 +117,8 @@ export function usePeerConnection() {
   const createRoom = useCallback((playerName: string) => {
     if (!peer) return;
 
-    const code = peer.id.substring(0, 6).toUpperCase();
+    // Use the full peer ID as room code for P2P connection
+    const code = peer.id;
     setRoomCode(code);
     setIsHost(true);
 
@@ -137,7 +138,8 @@ export function usePeerConnection() {
     if (!peer) return;
 
     try {
-      const hostId = code.toLowerCase();
+      // Use the room code directly as the peer ID (case-sensitive)
+      const hostId = code.trim();
       const conn = peer.connect(hostId);
 
       conn.on('open', () => {
