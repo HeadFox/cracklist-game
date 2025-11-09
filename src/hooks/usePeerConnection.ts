@@ -90,7 +90,18 @@ export function usePeerConnection() {
 
   // Initialize peer
   useEffect(() => {
-    const newPeer = new Peer();
+    const newPeer = new Peer({
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' },
+        ],
+      },
+      debug: 2, // Enable debug logs
+    });
 
     newPeer.on('open', (id) => {
       setPeerId(id);
