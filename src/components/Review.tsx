@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePhotoStore } from '../store/photoStore';
 
 export function Review() {
@@ -22,7 +22,7 @@ export function Review() {
     ? `${currentPhoto.baseUrl}=dv`
     : '';
 
-  const handleDecision = (decision: 'keep' | 'convert' | 'skip') => {
+  const handleDecision = useCallback((decision: 'keep' | 'convert' | 'skip') => {
     addReview(decision);
 
     // Auto-advance to next photo
@@ -33,9 +33,9 @@ export function Review() {
       // Finished reviewing all photos
       setPhase('gallery');
     }
-  };
+  }, [addReview, currentIndex, livePhotos.length, nextPhoto, setPhase]);
 
-  const handleKeyPress = (e: KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowLeft':
         if (currentIndex > 0) previousPhoto();
@@ -45,7 +45,7 @@ export function Review() {
         break;
       case ' ':
         e.preventDefault();
-        setIsPlaying(!isPlaying);
+        setIsPlaying((prev) => !prev);
         break;
       case 'k':
         handleDecision('keep');
@@ -57,12 +57,12 @@ export function Review() {
         handleDecision('skip');
         break;
     }
-  };
+  }, [currentIndex, livePhotos.length, previousPhoto, nextPhoto, handleDecision]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, isPlaying]);
+  }, [handleKeyPress]);
 
   if (!currentPhoto) {
     return (
