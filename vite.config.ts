@@ -13,10 +13,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Cracklist Game',
-        short_name: 'Cracklist',
-        description: 'Petit Bac meets UNO - A multiplayer word game',
-        theme_color: '#2563eb',
+        name: 'Google Photos Live Converter',
+        short_name: 'Live Converter',
+        description: 'Review and convert Google Photos Live Photos to still images',
+        theme_color: '#4f46e5',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
