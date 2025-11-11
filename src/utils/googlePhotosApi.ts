@@ -23,6 +23,9 @@ export async function fetchAllMediaItems(
   let pageToken: string | undefined = undefined;
 
   try {
+    console.log('🔑 Fetching media items with token:', accessToken?.substring(0, 20) + '...');
+    console.log('📍 API endpoint:', `${GOOGLE_PHOTOS_API_BASE}/mediaItems:search`);
+
     do {
       const response: any = await axios.post(
         `${GOOGLE_PHOTOS_API_BASE}/mediaItems:search`,
@@ -38,6 +41,9 @@ export async function fetchAllMediaItems(
         }
       );
 
+      console.log('✅ Response status:', response.status);
+      console.log('📦 Items received:', response.data.mediaItems?.length || 0);
+
       const items = response.data.mediaItems || [];
       allItems.push(...items);
 
@@ -49,8 +55,10 @@ export async function fetchAllMediaItems(
     } while (pageToken);
 
     return allItems;
-  } catch (error) {
-    console.error('Error fetching media items:', error);
+  } catch (error: any) {
+    console.error('❌ Error fetching media items:', error);
+    console.error('📋 Error response:', error.response?.data);
+    console.error('🔢 Error status:', error.response?.status);
     throw new Error('Failed to fetch media items from Google Photos');
   }
 }
