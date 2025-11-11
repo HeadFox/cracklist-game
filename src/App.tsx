@@ -1,5 +1,6 @@
 import { usePhotoStore } from './store/photoStore';
-import { Login } from './components/Login';
+import { LoginDirect } from './components/LoginDirect';
+import { OAuthCallback } from './components/OAuthCallback';
 import { Loading } from './components/Loading';
 import { Gallery } from './components/Gallery';
 import { Review } from './components/Review';
@@ -9,6 +10,11 @@ import { Error } from './components/Error';
 function App() {
   const { phase, error } = usePhotoStore();
 
+  // Check if we're handling an OAuth callback
+  if (window.location.hash.includes('access_token')) {
+    return <OAuthCallback />;
+  }
+
   // Show error if there's an error
   if (error) {
     return <Error />;
@@ -17,7 +23,7 @@ function App() {
   // Route based on phase
   switch (phase) {
     case 'login':
-      return <Login />;
+      return <LoginDirect />;
     case 'loading':
       return <Loading />;
     case 'gallery':
@@ -27,7 +33,7 @@ function App() {
     case 'processing':
       return <Processing />;
     default:
-      return <Login />;
+      return <LoginDirect />;
   }
 }
 
