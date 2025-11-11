@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppState, LivePhoto, PhotoDecision } from '../types/photos';
 
 interface PhotoStore extends AppState {
@@ -42,90 +43,105 @@ const initialState: AppState = {
   processedCount: 0,
 };
 
-export const usePhotoStore = create<PhotoStore>((set, get) => ({
-  ...initialState,
+export const usePhotoStore = create<PhotoStore>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-  // Authentication
-  setAccessToken: (token) => set({ accessToken: token, phase: token ? 'loading' : 'login' }),
+      // Authentication
+      setAccessToken: (token) => set({ accessToken: token, phase: token ? 'loading' : 'login' }),
 
-  logout: () => set({ ...initialState }),
+      logout: () => {
+        localStorage.removeItem('photo-storage');
+        set({ ...initialState });
+      },
 
-  // Loading and data
-  setLivePhotos: (photos) =>
-    set({
-      livePhotos: photos,
-      totalPhotos: photos.length,
-      phase: photos.length > 0 ? 'gallery' : 'loading',
-      error: null,
+      // Loading and data
+      setLivePhotos: (photos) =>
+        set({
+          livePhotos: photos,
+          totalPhotos: photos.length,
+          phase: photos.length > 0 ? 'gallery' : 'loading',
+          error: null,
+        }),
+
+      setLoading: (loading) => set({ isLoading: loading }),
+
+      setError: (error) => set({ error, isLoading: false }),
+
+      setPhase: (phase) => set({ phase }),
+
+      // Navigation
+      nextPhoto: () => {
+        const { currentIndex, livePhotos } = get();
+        if (currentIndex < livePhotos.length - 1) {
+          set({ currentIndex: currentIndex + 1 });
+        }
+      },
+
+      previousPhoto: () => {
+        const { currentIndex } = get();
+        if (currentIndex > 0) {
+          set({ currentIndex: currentIndex - 1 });
+        }
+      },
+
+      goToPhoto: (index) => {
+        const { livePhotos } = get();
+        if (index >= 0 && index < livePhotos.length) {
+          set({ currentIndex: index });
+        }
+      },
+
+      // Review actions
+      addReview: (decision) => {
+        const { livePhotos, currentIndex, reviews } = get();
+        const mediaItem = livePhotos[currentIndex];
+
+        if (mediaItem) {
+          const existingReviewIndex = reviews.findIndex(
+            (r) => r.mediaItem.id === mediaItem.id
+          );
+
+          if (existingReviewIndex >= 0) {
+            // Update existing review
+            const newReviews = [...reviews];
+            newReviews[existingReviewIndex] = { mediaItem, decision };
+            set({ reviews: newReviews });
+          } else {
+            // Add new review
+            set({ reviews: [...reviews, { mediaItem, decision }] });
+          }
+        }
+      },
+
+      updateReview: (index, decision) => {
+        const { reviews } = get();
+        if (index >= 0 && index < reviews.length) {
+          const newReviews = [...reviews];
+          newReviews[index] = { ...newReviews[index], decision };
+          set({ reviews: newReviews });
+        }
+      },
+
+      clearReviews: () => set({ reviews: [] }),
+
+      // Processing
+      setProcessedCount: (count) => set({ processedCount: count }),
+
+      incrementProcessedCount: () =>
+        set((state) => ({ processedCount: state.processedCount + 1 })),
+
+      // Reset
+      reset: () => set(initialState),
     }),
-
-  setLoading: (loading) => set({ isLoading: loading }),
-
-  setError: (error) => set({ error, isLoading: false }),
-
-  setPhase: (phase) => set({ phase }),
-
-  // Navigation
-  nextPhoto: () => {
-    const { currentIndex, livePhotos } = get();
-    if (currentIndex < livePhotos.length - 1) {
-      set({ currentIndex: currentIndex + 1 });
+    {
+      name: 'photo-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        accessToken: state.accessToken,
+        phase: state.phase,
+      }),
     }
-  },
-
-  previousPhoto: () => {
-    const { currentIndex } = get();
-    if (currentIndex > 0) {
-      set({ currentIndex: currentIndex - 1 });
-    }
-  },
-
-  goToPhoto: (index) => {
-    const { livePhotos } = get();
-    if (index >= 0 && index < livePhotos.length) {
-      set({ currentIndex: index });
-    }
-  },
-
-  // Review actions
-  addReview: (decision) => {
-    const { livePhotos, currentIndex, reviews } = get();
-    const mediaItem = livePhotos[currentIndex];
-
-    if (mediaItem) {
-      const existingReviewIndex = reviews.findIndex(
-        (r) => r.mediaItem.id === mediaItem.id
-      );
-
-      if (existingReviewIndex >= 0) {
-        // Update existing review
-        const newReviews = [...reviews];
-        newReviews[existingReviewIndex] = { mediaItem, decision };
-        set({ reviews: newReviews });
-      } else {
-        // Add new review
-        set({ reviews: [...reviews, { mediaItem, decision }] });
-      }
-    }
-  },
-
-  updateReview: (index, decision) => {
-    const { reviews } = get();
-    if (index >= 0 && index < reviews.length) {
-      const newReviews = [...reviews];
-      newReviews[index] = { ...newReviews[index], decision };
-      set({ reviews: newReviews });
-    }
-  },
-
-  clearReviews: () => set({ reviews: [] }),
-
-  // Processing
-  setProcessedCount: (count) => set({ processedCount: count }),
-
-  incrementProcessedCount: () =>
-    set((state) => ({ processedCount: state.processedCount + 1 })),
-
-  // Reset
-  reset: () => set(initialState),
-}));
+  )
+);
