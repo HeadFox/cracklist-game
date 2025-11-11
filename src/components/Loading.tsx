@@ -17,6 +17,11 @@ export function Loading() {
       try {
         setStatus('Fetching your photos...');
 
+        // Debug: vérifier le token
+        console.log('Access token present:', !!accessToken);
+        console.log('Token length:', accessToken?.length);
+        console.log('Token starts with:', accessToken?.substring(0, 10));
+
         const photos = await fetchLivePhotos(accessToken, (count) => {
           setProgress(count);
           setStatus(`Found ${count} photos so far...`);
@@ -35,6 +40,7 @@ export function Loading() {
         }
       } catch (error: any) {
         console.error('Error loading photos:', error);
+        console.error('Full error:', JSON.stringify(error, null, 2));
         setError(error.message || 'Failed to load photos from Google Photos');
       }
     };
