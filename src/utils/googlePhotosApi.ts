@@ -23,10 +23,15 @@ export async function fetchAllMediaItems(
   let pageToken: string | undefined = undefined;
 
   try {
-    console.log('🔑 Fetching media items with token:', accessToken?.substring(0, 20) + '...');
+    console.log('🔑 Token type:', typeof accessToken);
+    console.log('🔑 Token value:', accessToken);
+    console.log('🔑 Token substring:', accessToken?.substring(0, 20));
     console.log('📍 API endpoint:', `${GOOGLE_PHOTOS_API_BASE}/mediaItems:search`);
 
     do {
+      const authHeader = `Bearer ${accessToken}`;
+      console.log('📤 Authorization header:', authHeader.substring(0, 30) + '...');
+
       const response: any = await axios.post(
         `${GOOGLE_PHOTOS_API_BASE}/mediaItems:search`,
         {
@@ -35,7 +40,7 @@ export async function fetchAllMediaItems(
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: authHeader,
             'Content-Type': 'application/json',
           },
         }
