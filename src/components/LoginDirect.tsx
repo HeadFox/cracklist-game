@@ -1,4 +1,3 @@
-import { useGoogleLogin } from '@react-oauth/google';
 import { usePhotoStore } from '../store/photoStore';
 
 const REQUIRED_SCOPES = [
@@ -6,23 +5,24 @@ const REQUIRED_SCOPES = [
   'https://www.googleapis.com/auth/photoslibrary.appendonly',
 ];
 
-export function Login() {
-  const { setAccessToken, setError, setLivePhotos, setPhase } = usePhotoStore();
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const REDIRECT_URI = window.location.origin + window.location.pathname;
 
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      setAccessToken(tokenResponse.access_token);
-    },
-    onError: (error) => {
-      console.error('Login failed:', error);
-      setError('Failed to authenticate with Google. Please try again.');
-    },
-    scope: REQUIRED_SCOPES.join(' '),
-  });
+export function LoginDirect() {
+  const { setLivePhotos, setPhase } = usePhotoStore();
 
-  // Demo mode for testing without Google credentials
+  const loginWithGoogle = () => {
+    // Utiliser le flux OAuth2 complet au lieu de @react-oauth/google
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+    authUrl.searchParams.set('response_type', 'token');
+    authUrl.searchParams.set('scope', REQUIRED_SCOPES.join(' '));
+
+    window.location.href = authUrl.toString();
+  };
+
   const enterDemoMode = () => {
-    // Create mock Live Photos for demo
     const mockPhotos = [
       {
         id: 'demo-1',
@@ -68,7 +68,6 @@ export function Login() {
       },
     ];
 
-    // Set photos and go directly to gallery (skip loading)
     setLivePhotos(mockPhotos as any);
     setPhase('gallery');
   };
@@ -100,77 +99,15 @@ export function Login() {
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
-          <div className="flex items-start space-x-3">
-            <svg
-              className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Fetch all your Live Photos
-              </p>
-              <p className="text-xs text-gray-500">
-                Automatically identify motion photos in your library
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <svg
-              className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Review each photo
-              </p>
-              <p className="text-xs text-gray-500">
-                Play the motion and decide what to keep
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <svg
-              className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Convert to still images
-              </p>
-              <p className="text-xs text-gray-500">
-                Save space and simplify your library
-              </p>
-            </div>
-          </div>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-yellow-800">
+            <strong>Test du nouveau flux OAuth:</strong> Cette version utilise le flux OAuth2 complet pour obtenir les bonnes permissions.
+          </p>
         </div>
 
         <div className="space-y-3">
           <button
-            onClick={() => login()}
+            onClick={loginWithGoogle}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -191,7 +128,7 @@ export function Login() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span>Sign in with Google</span>
+            <span>Sign in with Google (NEW)</span>
           </button>
 
           <button
@@ -226,9 +163,6 @@ export function Login() {
             We only access your photos to help you manage them.
             <br />
             Your data stays private and is never stored.
-          </p>
-          <p className="text-xs text-gray-400 mt-2">
-            Demo mode lets you explore the UI without connecting to Google Photos
           </p>
         </div>
       </div>
