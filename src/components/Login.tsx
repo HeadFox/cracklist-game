@@ -7,7 +7,7 @@ const REQUIRED_SCOPES = [
 ];
 
 export function Login() {
-  const { setAccessToken, setError, setLivePhotos } = usePhotoStore();
+  const { setAccessToken, setError, setLivePhotos, setPhase } = usePhotoStore();
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -68,8 +68,9 @@ export function Login() {
       },
     ];
 
+    // Set photos and go directly to gallery (skip loading)
     setLivePhotos(mockPhotos as any);
-    setAccessToken('demo-token');
+    setPhase('gallery');
   };
 
   return (
